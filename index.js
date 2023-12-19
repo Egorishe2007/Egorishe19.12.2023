@@ -1,5 +1,10 @@
 import readlineSync from 'readline-sync';
 
+let userScore = 0;
+let computerScore = 0;
+let totalWins = 0;
+let totalRounds = 0;
+
 function getUserChoice() {
   const choices = ['камень', 'ножницы', 'бумага'];
   const index = readlineSync.keyInSelect(choices, 'Выберите: ');
@@ -12,9 +17,12 @@ function getUserChoice() {
   return choices[index];
 }
 
-function getComputerChoice() {
+function getComputerChoice(difficulty) {
   const choices = ['камень', 'ножницы', 'бумага'];
-  const index = Math.floor(Math.random() * 3);
+  
+  // Adjust difficulty
+  const index = (difficulty === 'легко') ? Math.floor(Math.random() * 3) : Math.floor(Math.random() * 2);
+
   return choices[index];
 }
 
@@ -23,34 +31,49 @@ function determineWinner(userChoice, computerChoice) {
   console.log(`Выбор компьютера: ${computerChoice}`);
 
   if (userChoice === computerChoice) {
-    return 'Ничья!';
+    console.log('Ничья!');
   } else if (
     (userChoice === 'камень' && computerChoice === 'ножницы') ||
     (userChoice === 'ножницы' && computerChoice === 'бумага') ||
     (userChoice === 'бумага' && computerChoice === 'камень')
   ) {
-    return 'Вы победили!';
+    userScore++;
+    totalWins++;
+    console.log('Вы победили!');
   } else {
-    return 'Вы проиграли.';
+    computerScore++;
+    console.log('Вы проиграли.');
   }
+}
+
+function displayScores() {
+  console.log(`Ваш счёт: ${userScore}`);
+  console.log(`Счёт компьютера: ${computerScore}`);
+  console.log(`Общее количество побед: ${totalWins}`);
+  console.log(`Общее количество раундов: ${totalRounds}`);
 }
 
 function playGame() {
-  const userChoice = getUserChoice().toLowerCase();
-  const computerChoice = getComputerChoice().toLowerCase();
-  const result = determineWinner(userChoice, computerChoice);
+  const difficulty = readlineSync.keyInSelect(['легко', 'нормально'], 'Выберите уровень сложности компьютера: ');
 
-  console.log(result);
+  const rounds = readlineSync.questionInt('Введите количество раундов: ');
 
-  const playAgain = readlineSync.keyInYNStrict('Хотите сыграть еще раз?');
-  if (playAgain) {
-    playGame();
-  } else {
-    console.log('Спасибо за игру!');
-    process.exit();
+  for (let i = 1; i <= rounds; i++) {
+    console.log(`\n--- Раунд ${i} ---`);
+    const userChoice = getUserChoice().toLowerCase();
+    const computerChoice = getComputerChoice(difficulty ? 'легко' : 'нормально').toLowerCase();
+
+    determineWinner(userChoice, computerChoice);
+
+    displayScores();
+    totalRounds++;
   }
+
+  console.log('\n--- Статистика ---');
+  console.log(`Количество выигранных раундов: ${userScore}`);
+  console.log(`Количество проигранных раундов: ${computerScore}`);
+  console.log(`Количество ничьих: ${totalRounds - userScore - computerScore}`);
 }
 
-
-// Запуск игры
+// Запустить игру
 playGame();
